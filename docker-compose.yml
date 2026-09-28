@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: malo-mysql
+    restart: always
+    # Big dummy-data uploads: 1G is MySQL's maximum packet size
+    command: --max_allowed_packet=1G
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: malo_garments
+    ports:
+      - "3306:3306"
+    volumes:
+      - malo_mysql_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./malo-garments-fullstack/backend
+      dockerfile: Dockerfile
+    container_name: malo-backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      # XAMPP MariaDB on this laptop (port 3307) — same database phpMyAdmin shows.
+      # Back to the Docker MySQL: "mysql://root:root@mysql:3306/malo_garments"
+      # Dedicated XAMPP user that can only touch malo_garments (created for this app)
+      DATABASE_URL: "mysql://malo_app:glCBjxrFiN8s2y7lELIpNQat@host.docker.internal:3307/malo_garments"
+      PORT: 3001
+      NODE_OPTIONS: "--max-old-space-size=4096"   # room to parse very large uploads
+      JWT_SECRET: "3905950749e0dc0513ef6aaa856d4ffb2b35b1ce5be6252fe61dcb4a2abb8823"
+      ADMIN_JWT_SECRET: "f8c97ce119bafb9fccf59e14f6f4acb30fd8adf2725246744e1b9249750f0df2"
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASSWORD: "root"
+      DB_NAME: "malo_garments"
+    depends_on:
+      - mysql
+
+volumes:
+  malo_mysql_data:

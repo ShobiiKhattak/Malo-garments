@@ -1,0 +1,95 @@
+/* ══════════════════════════════════════════════════════════════
+ * Malo Garments — Neon Auth Card
+ * Shared by the customer Login page and the Admin login page.
+ * Accent color follows the store's brand palette (rose / gold).
+ * ══════════════════════════════════════════════════════════════ */
+
+@keyframes neonCardIn { from { opacity:0; transform:scale(0.94) translateY(18px); filter:blur(6px); } to { opacity:1; transform:scale(1) translateY(0); filter:blur(0); } }
+@keyframes neonSlideIn { from { opacity:0; transform:translateX(26px); } to { opacity:1; transform:translateX(0); } }
+@keyframes neonPulse { 0% { filter:brightness(1.7) saturate(1.4); } 100% { filter:brightness(1) saturate(1); } }
+@keyframes neonGlowPulse { 0%,100% { box-shadow:0 0 0 1px rgba(201,123,123,0.18), 0 0 40px rgba(201,123,123,0.22), 0 0 90px rgba(201,123,123,0.1); } 50% { box-shadow:0 0 0 1px rgba(201,123,123,0.28), 0 0 55px rgba(201,123,123,0.32), 0 0 110px rgba(201,123,123,0.16); } }
+@keyframes neonSpin { to { transform:rotate(360deg); } }
+
+.neon-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 25% 15%, #2b1f1a 0%, #150f0c 55%, #0a0705 100%); padding:24px; position:relative; overflow:hidden; }
+.neon-page::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(201,169,110,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,169,110,0.05) 1px,transparent 1px); background-size:44px 44px; mask-image:radial-gradient(ellipse at center, black 0%, transparent 70%); pointer-events:none; }
+
+.neon-brand { position:relative; z-index:3; text-align:center; color:var(--gold); font-size:0.7rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:22px; }
+
+.neon-card { position:relative; z-index:1; width:100%; max-width:840px; min-height:480px; background:#1c1512; border-radius:18px; border:1px solid rgba(201,123,123,0.4); box-shadow:0 0 0 1px rgba(201,123,123,0.18), 0 0 40px rgba(201,123,123,0.22), 0 0 90px rgba(201,123,123,0.1); overflow:hidden; display:flex; animation:neonCardIn 0.7s cubic-bezier(0.16,1,0.3,1) both, neonGlowPulse 5s ease-in-out infinite 0.7s; }
+
+.neon-diagonal-bg { position:absolute; inset:0; background:linear-gradient(135deg,var(--gold) 0%,var(--rose-dark) 100%); clip-path:polygon(58% 0, 100% 0, 100% 100%, 44% 100%); z-index:0; animation:neonPulse 0.7s ease both; }
+
+.neon-form-side { position:relative; z-index:2; flex:0 0 56%; padding:48px 46px; display:flex; flex-direction:column; justify-content:center; }
+.neon-welcome-side { position:relative; z-index:2; flex:1; padding:48px 38px; display:flex; flex-direction:column; justify-content:center; color:white; }
+
+.neon-welcome-title { font-family:var(--font-heading); font-size:2.1rem; font-weight:700; line-height:1.18; margin-bottom:12px; color:#ffffff; animation:neonSlideIn 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.neon-welcome-sub { font-size:0.92rem; color:rgba(255,255,255,0.92); line-height:1.6; max-width:260px; animation:neonSlideIn 0.55s cubic-bezier(0.16,1,0.3,1) 0.08s both; }
+
+.neon-anim > * { animation:neonSlideIn 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+.neon-anim > *:nth-child(1) { animation-delay:0.03s; }
+.neon-anim > *:nth-child(2) { animation-delay:0.09s; }
+.neon-anim > *:nth-child(3) { animation-delay:0.15s; }
+.neon-anim > *:nth-child(4) { animation-delay:0.21s; }
+.neon-anim > *:nth-child(5) { animation-delay:0.27s; }
+.neon-anim > *:nth-child(6) { animation-delay:0.33s; }
+.neon-anim > *:nth-child(7) { animation-delay:0.39s; }
+
+.neon-heading { color:#fdf6f0; font-family:var(--font-heading); font-size:1.85rem; margin-bottom:26px; font-weight:700; }
+
+.neon-field { margin-bottom:24px; }
+.neon-field label { display:block; color:var(--gold); font-size:0.76rem; margin-bottom:7px; letter-spacing:0.3px; }
+.neon-field-row { display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(201,169,110,0.35); padding-bottom:8px; transition:border-color 0.2s ease; }
+.neon-field-row:focus-within { border-color:var(--rose); }
+.neon-field.neon-field-error .neon-field-row { border-color:#f87171; }
+.neon-field-row input { flex:1; min-width:0; background:none; border:none; outline:none; color:#fdf6f0; font-size:0.95rem; font-family:inherit; }
+.neon-field-row input::placeholder { color:rgba(255,255,255,0.28); }
+.neon-field-icon { color:var(--rose); display:flex; flex-shrink:0; }
+.neon-field-eye { background:none; border:none; padding:0; color:var(--rose); display:flex; cursor:pointer; flex-shrink:0; }
+.neon-field-hint { font-size:0.72rem; color:rgba(255,255,255,0.4); margin-top:6px; }
+.neon-error-text { font-size:0.76rem; color:#f87171; margin-top:6px; }
+
+.neon-btn { width:100%; padding:14px; border-radius:999px; background:#1c1512; border:1.5px solid var(--rose); color:#fdf6f0; font-weight:600; font-size:0.95rem; letter-spacing:0.5px; cursor:pointer; box-shadow:0 0 18px rgba(201,123,123,0.4), inset 0 0 12px rgba(201,123,123,0.08); transition:box-shadow 0.25s ease, transform 0.15s ease, opacity 0.2s ease; margin-top:6px; }
+.neon-btn:hover:not(:disabled) { box-shadow:0 0 30px rgba(201,123,123,0.7), inset 0 0 16px rgba(201,123,123,0.16); transform:translateY(-1px); }
+.neon-btn:active:not(:disabled) { transform:translateY(0) scale(0.98); }
+.neon-btn:disabled { opacity:0.55; cursor:default; }
+.neon-btn-spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(201,123,123,0.3); border-top-color:var(--rose); border-radius:50%; animation:neonSpin 0.6s linear infinite; margin-right:8px; vertical-align:-2px; }
+
+.neon-switch { color:rgba(255,255,255,0.5); font-size:0.85rem; margin-top:18px; }
+.neon-switch button { color:var(--rose); background:none; border:none; cursor:pointer; font-weight:600; padding:0; font-size:inherit; }
+.neon-switch button:hover { text-decoration:underline; }
+
+.neon-back { background:none; border:none; color:rgba(255,255,255,0.5); font-size:0.85rem; cursor:pointer; padding:0; margin-bottom:20px; display:flex; align-items:center; gap:6px; transition:color 0.2s ease; }
+.neon-back:hover { color:var(--rose); }
+
+.neon-divider { display:flex; align-items:center; gap:12px; margin:22px 0 16px; color:rgba(255,255,255,0.35); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; }
+.neon-divider::before, .neon-divider::after { content:''; flex:1; height:1px; background:rgba(201,169,110,0.25); }
+
+.neon-social-row { display:flex; gap:12px; }
+.neon-social-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:999px; border:1px solid rgba(201,123,123,0.35); background:rgba(201,123,123,0.06); color:#fdf3ec; font-size:0.82rem; cursor:pointer; transition:all 0.2s ease; }
+.neon-social-btn:hover { border-color:var(--rose); box-shadow:0 0 16px rgba(201,123,123,0.35); }
+.neon-google-wrap { flex:1; border-radius:999px; border:1px solid rgba(201,123,123,0.35); background:rgba(201,123,123,0.06); display:flex; align-items:center; justify-content:center; overflow:hidden; transition:all 0.2s ease; }
+.neon-google-wrap:hover { border-color:var(--rose); box-shadow:0 0 16px rgba(201,123,123,0.35); }
+.neon-google-disabled { flex:1; display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.7rem; color:rgba(255,255,255,0.35); border:1px dashed rgba(255,255,255,0.2); border-radius:999px; padding:8px; }
+
+.neon-otp-boxes { display:flex; gap:10px; justify-content:flex-start; margin:20px 0; }
+.neon-otp-box { width:44px; height:52px; text-align:center; font-size:1.35rem; font-weight:700; border:1px solid rgba(201,169,110,0.35); border-radius:10px; background:rgba(201,123,123,0.08); color:#fdf6f0; outline:none; transition:border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease; }
+.neon-otp-box:focus { border-color:var(--rose); box-shadow:0 0 14px rgba(201,123,123,0.4); transform:translateY(-2px); }
+.neon-otp-shake { animation:neonOtpShake 0.42s ease; }
+@keyframes neonOtpShake { 10%,90%{transform:translateX(-2px);} 20%,80%{transform:translateX(4px);} 30%,50%,70%{transform:translateX(-8px);} 40%,60%{transform:translateX(8px);} }
+
+.neon-resend { margin-top:14px; font-size:0.85rem; color:rgba(255,255,255,0.45); }
+.neon-resend button { background:none; border:none; color:var(--rose); font-weight:600; cursor:pointer; padding:0; }
+.neon-resend button:disabled { color:rgba(255,255,255,0.3); cursor:default; }
+
+.neon-success-icon { width:64px; height:64px; border-radius:50%; background:rgba(201,123,123,0.14); border:1.5px solid var(--rose); color:var(--rose); display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin-bottom:20px; box-shadow:0 0 24px rgba(201,123,123,0.4); }
+
+@media (max-width:720px) {
+  .neon-card { flex-direction:column-reverse; min-height:0; }
+  .neon-diagonal-bg { clip-path:polygon(0 0, 100% 0, 100% 22%, 0 42%); }
+  .neon-form-side, .neon-welcome-side { flex:none; width:100%; padding:32px 26px; }
+  .neon-welcome-side { min-height:130px; justify-content:flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-card, .neon-diagonal-bg, .neon-welcome-title, .neon-welcome-sub, .neon-anim > *, .neon-otp-box, .neon-btn-spinner { animation:none !important; }
+}

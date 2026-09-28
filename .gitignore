@@ -1,0 +1,35 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build / generated files
+dist/
+build/
+.next/
+**/.next/
+
+# Temporary files
+_verify_tmp/
+tmp/
+temp/
+
+# Archives
+*.zip
+
+# VS Code local settings
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,14 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Dependencies copy & install
+COPY package*.json ./
+RUN npm install
+
+# Pura backend code copy
+COPY . .
+
+EXPOSE 5000
+
+CMD ["npm", "run", "dev"]

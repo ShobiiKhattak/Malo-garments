@@ -1,0 +1,162 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid()) @db.VarChar(30)
+  name          String    @db.VarChar(200)
+  email         String?   @unique @db.VarChar(200)
+  password_hash String?   @db.VarChar(200)
+  phone         String?   @unique @db.VarChar(50)
+  google_id     String?   @unique @db.VarChar(100)
+  date_joined   DateTime  @default(now())
+  addresses     Address[]
+  orders        Order[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id         String   @id @default(cuid()) @db.VarChar(30)
+  phone      String   @db.VarChar(50)
+  code_hash  String   @db.VarChar(200)
+  expires_at DateTime
+  attempts   Int      @default(0)
+  consumed   Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([phone])
+  @@map("otp_codes")
+}
+
+model Address {
+  id      String  @id @default(cuid()) @db.VarChar(30)
+  user_id String  @db.VarChar(30)
+  label   String? @db.VarChar(100)
+  phone   String? @db.VarChar(50)
+  street  String  @db.VarChar(300)
+  city    String  @db.VarChar(100)
+  state   String? @db.VarChar(100)
+  zip     String? @db.VarChar(20)
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model AdminUser {
+  id            String @id @default(cuid()) @db.VarChar(30)
+  username      String @unique @db.VarChar(100)
+  password_hash String @db.VarChar(200)
+  name          String @db.VarChar(200)
+
+  @@map("admin_users")
+}
+
+model Category {
+  id            String        @id @default(cuid()) @db.VarChar(30)
+  name          String        @db.VarChar(200)
+  slug          String        @unique @db.VarChar(200)
+  image         String        @db.LongText
+  subcategories Subcategory[]
+  products      Product[]
+
+  @@map("categories")
+}
+
+model Subcategory {
+  id          String    @id @default(cuid()) @db.VarChar(30)
+  category_id String    @db.VarChar(30)
+  name        String    @db.VarChar(200)
+  slug        String    @db.VarChar(200)
+  category    Category  @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@map("subcategories")
+}
+
+model Product {
+  id               String       @id @default(cuid()) @db.VarChar(30)
+  name             String       @db.VarChar(200)
+  price            Decimal      @db.Decimal(10, 2)
+  original_price   Decimal      @db.Decimal(10, 2)
+  category_id      String?      @db.VarChar(30)
+  subcategory_id   String?      @db.VarChar(30)
+  sizes            Json?
+  colors           Json?
+  stock            Int          @default(0)
+  images           Json?
+  description      String?      @db.Text
+  rating           Decimal      @default(0) @db.Decimal(2, 1)
+  reviews          Int          @default(0)
+  date_added       DateTime?    @db.Date
+  featured         Boolean      @default(false)
+  on_sale          Boolean      @default(false)
+  category         Category?    @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  subcategory      Subcategory? @relation(fields: [subcategory_id], references: [id], onDelete: SetNull)
+  order_items      OrderItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id              String      @id @db.VarChar(30)
+  user_id         String?     @db.VarChar(30)
+  customer_name   String?     @db.VarChar(150)
+  customer_email  String?     @db.VarChar(150)
+  customer_phone  String?     @db.VarChar(30)
+  address         String?     @db.VarChar(255)
+  city            String?     @db.VarChar(100)
+  state           String?     @db.VarChar(100)
+  zip             String?     @db.VarChar(20)
+  country         String?     @default("Pakistan") @db.VarChar(100)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  shipping        Decimal     @default(0) @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+  discount        Decimal     @default(0) @db.Decimal(10, 2)
+  payment_method  String?     @default("cod") @db.VarChar(30)
+  // not_required (COD) | awaiting (online, nothing sent yet) | submitted (customer sent a reference,
+  // admin must verify) | confirmed (admin saw the money) | rejected (admin could not find it)
+  payment_status  String      @default("not_required") @db.VarChar(20)
+  payment_ref     String?     @db.VarChar(120)
+  payment_submitted_at DateTime?
+  payment_confirmed_at DateTime?
+  /// Customer removed it from "My Orders" (the admin still sees and keeps the order)
+  hidden_by_customer   Boolean     @default(false)
+  status          String?     @default("Pending")
+  notes           String?     @db.Text
+  created_at      DateTime?   @default(now())
+  user            User?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  order_id   String   @db.VarChar(30)
+  product_id String?  @db.VarChar(30)
+  name       String   @db.VarChar(200)
+  image      String   @db.LongText
+  price      Decimal  @db.Decimal(10, 2)
+  size       String   @default("") @db.VarChar(50)
+  color      String   @default("") @db.VarChar(100)
+  quantity   Int
+  order      Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product    Product? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
+
+model Newsletter {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique @db.VarChar(200)
+  created_at DateTime @default(now())
+
+  @@map("newsletter")
+}

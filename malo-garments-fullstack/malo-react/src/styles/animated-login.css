@@ -1,0 +1,454 @@
+/* ============================================================
+   NexusAuth — Animated Login Card
+   Dark, glassy, fully animated auth card.
+   ============================================================ */
+
+.nexus-page {
+  --nx-bg: #070b12;
+  --nx-card: #0d1420;
+  --nx-card-2: #0b101a;
+  --nx-line: rgba(148, 163, 184, 0.14);
+  --nx-text: #f1f5f9;
+  --nx-muted: #8b9bb4;
+  --nx-accent: #22d3ee;
+  --nx-accent-2: #3b82f6;
+  --nx-field: rgba(13, 20, 32, 0.72);
+  --nx-radius: 22px;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 5vw, 64px) 16px;
+  min-height: calc(100vh - var(--navbar-height));
+  background: var(--nx-bg);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Ambient floating orbs ── */
+.nexus-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+.nexus-orb.a {
+  width: 380px; height: 380px;
+  top: -120px; left: -80px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.5), transparent 70%);
+  animation: nexusFloatA 13s ease-in-out infinite;
+}
+.nexus-orb.b {
+  width: 340px; height: 340px;
+  bottom: -140px; right: -70px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.5), transparent 70%);
+  animation: nexusFloatB 16s ease-in-out infinite;
+}
+.nexus-orb.c {
+  width: 240px; height: 240px;
+  top: 45%; right: 18%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.32), transparent 70%);
+  animation: nexusFloatC 19s ease-in-out infinite;
+}
+
+@keyframes nexusFloatA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(60px, 50px, 0) scale(1.15); }
+}
+@keyframes nexusFloatB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-70px, -40px, 0) scale(1.12); }
+}
+@keyframes nexusFloatC {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.35; }
+  50%      { transform: translate3d(-40px, 30px, 0) scale(1.2); opacity: 0.6; }
+}
+
+/* ── Card ── */
+.nexus-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(26px, 5vw, 40px);
+  border-radius: var(--nx-radius);
+  border: 1px solid var(--nx-line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(160deg, var(--nx-card) 0%, var(--nx-card-2) 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 30px 80px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+  animation: nexusCardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* animated sweeping highlight across the card border */
+.nexus-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, transparent 20%, rgba(34, 211, 238, 0.55) 50%, transparent 80%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0.55;
+  background-size: 250% 100%;
+  animation: nexusSheen 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes nexusCardIn {
+  from { opacity: 0; transform: translate3d(0, 34px, 0) scale(0.94); filter: blur(10px); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+@keyframes nexusSheen {
+  from { background-position: 200% 0; }
+  to   { background-position: -100% 0; }
+}
+
+/* ── Brand header ── */
+.nexus-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 30px;
+  animation: nexusRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+.nexus-logo {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, rgba(34, 211, 238, 0.16), rgba(59, 130, 246, 0.12));
+  border: 1px solid rgba(34, 211, 238, 0.55);
+  color: var(--nx-accent);
+  animation: nexusLogoPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both,
+             nexusLogoGlow 3.4s ease-in-out 1s infinite;
+}
+.nexus-logo svg { width: 30px; height: 30px; }
+
+@keyframes nexusLogoPop {
+  0%   { opacity: 0; transform: scale(0.6) rotate(-12deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes nexusLogoGlow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(34,211,238,0.15), 0 0 22px rgba(34,211,238,0.28), inset 0 0 16px rgba(34,211,238,0.12); }
+  50%      { box-shadow: 0 0 0 1px rgba(34,211,238,0.28), 0 0 40px rgba(34,211,238,0.5), inset 0 0 24px rgba(34,211,238,0.2); }
+}
+
+.nexus-brand-text h1 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--nx-text);
+  line-height: 1;
+}
+.nexus-brand-text h1 span {
+  background: linear-gradient(90deg, var(--nx-accent), var(--nx-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.nexus-brand-text p {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: var(--nx-muted);
+  letter-spacing: 0.2px;
+}
+
+/* ── Headings ── */
+.nexus-title {
+  margin: 0 0 8px;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--nx-text);
+  letter-spacing: -0.4px;
+  animation: nexusRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+.nexus-subtitle {
+  margin: 0 0 26px;
+  font-size: 0.95rem;
+  color: var(--nx-muted);
+  animation: nexusRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+@keyframes nexusRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Staggered form rows ── */
+.nexus-form > .nexus-row { animation: nexusRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.nexus-form > .nexus-row:nth-child(1) { animation-delay: 0.36s; }
+.nexus-form > .nexus-row:nth-child(2) { animation-delay: 0.44s; }
+.nexus-form > .nexus-row:nth-child(3) { animation-delay: 0.52s; }
+.nexus-form > .nexus-row:nth-child(4) { animation-delay: 0.6s; }
+.nexus-form > .nexus-row:nth-child(5) { animation-delay: 0.68s; }
+.nexus-form > .nexus-row:nth-child(6) { animation-delay: 0.76s; }
+
+.nexus-row { margin-bottom: 20px; }
+
+.nexus-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+.nexus-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #cbd5e1;
+}
+.nexus-forgot {
+  position: relative;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--nx-accent);
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+.nexus-forgot::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 100%; height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.nexus-forgot:hover { color: #67e8f9; }
+.nexus-forgot:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* ── Fields ── */
+.nexus-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 14px;
+  border: 1px solid var(--nx-line);
+  background: var(--nx-field);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+.nexus-field:focus-within {
+  border-color: rgba(34, 211, 238, 0.75);
+  background: rgba(13, 20, 32, 0.95);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.13), 0 0 24px rgba(34, 211, 238, 0.18);
+  transform: translateY(-1px);
+}
+.nexus-field.error {
+  border-color: rgba(248, 113, 113, 0.7);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.12);
+  animation: nexusShake 0.45s ease;
+}
+.nexus-field-icon {
+  display: grid;
+  place-items: center;
+  padding: 0 4px 0 16px;
+  color: #5b6b83;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+.nexus-field:focus-within .nexus-field-icon { color: var(--nx-accent); transform: scale(1.06); }
+.nexus-field-icon svg { width: 19px; height: 19px; }
+
+.nexus-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--nx-text);
+  font-size: 0.98rem;
+  padding: 15px 16px;
+  font-family: inherit;
+}
+.nexus-input::placeholder { color: #55637a; }
+.nexus-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--nx-text);
+  -webkit-box-shadow: 0 0 0 1000px #0d1420 inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.nexus-field-btn {
+  display: grid;
+  place-items: center;
+  padding: 0 16px 0 6px;
+  background: none;
+  border: none;
+  color: #5b6b83;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+.nexus-field-btn:hover { color: var(--nx-accent); }
+.nexus-field-btn:active { transform: scale(0.9); }
+.nexus-field-btn svg { width: 20px; height: 20px; }
+
+.nexus-error {
+  margin-top: 7px;
+  font-size: 0.78rem;
+  color: #f87171;
+  animation: nexusRise 0.3s ease both;
+}
+
+@keyframes nexusShake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-7px); }
+  40%, 60% { transform: translateX(7px); }
+}
+
+/* ── Checkbox ── */
+.nexus-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+.nexus-check input { position: absolute; opacity: 0; width: 0; height: 0; }
+.nexus-check-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #f8fafc;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+.nexus-check-box svg {
+  width: 13px; height: 13px;
+  color: #0b101a;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 0.3s cubic-bezier(0.65, 0, 0.35, 1) 0.05s;
+}
+.nexus-check input:checked + .nexus-check-box {
+  background: linear-gradient(135deg, var(--nx-accent), var(--nx-accent-2));
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.45);
+}
+.nexus-check input:checked + .nexus-check-box svg { stroke-dashoffset: 0; }
+.nexus-check input:focus-visible + .nexus-check-box { box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.25); }
+.nexus-check:active .nexus-check-box { transform: scale(0.9); }
+
+/* ── Submit button ── */
+.nexus-submit {
+  position: relative;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 17px 22px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--nx-accent) 0%, var(--nx-accent-2) 55%, #2563eb 100%);
+  background-size: 200% 100%;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.42), 0 0 0 1px rgba(34, 211, 238, 0.25) inset;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background-position 0.6s ease;
+  animation: nexusRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.72s both;
+}
+.nexus-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background-position: 100% 0;
+  box-shadow: 0 20px 44px rgba(37, 99, 235, 0.55), 0 0 0 1px rgba(34, 211, 238, 0.4) inset;
+}
+.nexus-submit:active:not(:disabled) { transform: translateY(0) scale(0.99); }
+.nexus-submit:disabled { opacity: 0.72; cursor: not-allowed; }
+.nexus-submit .nexus-arrow { transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1); width: 20px; height: 20px; }
+.nexus-submit:hover:not(:disabled) .nexus-arrow { transform: translateX(5px); }
+
+/* moving shine on button */
+.nexus-submit::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 45%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  animation: nexusShine 3.6s ease-in-out infinite;
+}
+@keyframes nexusShine {
+  0%   { left: -60%; }
+  55%  { left: 130%; }
+  100% { left: 130%; }
+}
+
+/* ── Spinner ── */
+.nexus-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: nexusSpin 0.7s linear infinite;
+}
+@keyframes nexusSpin { to { transform: rotate(360deg); } }
+
+/* ── Top-level error banner ── */
+.nexus-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  animation: nexusShake 0.5s ease;
+}
+.nexus-banner svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* ── Footer / mode switch ── */
+.nexus-foot {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--nx-line);
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--nx-muted);
+  animation: nexusRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
+}
+.nexus-foot button {
+  color: var(--nx-accent);
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0 4px;
+  transition: color 0.2s ease;
+}
+.nexus-foot button:hover { color: #67e8f9; }
+
+@media (max-width: 480px) {
+  .nexus-title { font-size: 1.65rem; }
+  .nexus-brand-text h1 { font-size: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexus-page *, .nexus-card, .nexus-card::after,
+  .nexus-submit::before, .nexus-logo { animation: none !important; }
+  .nexus-field, .nexus-submit, .nexus-arrow, .nexus-forgot::after { transition: none !important; }
+}

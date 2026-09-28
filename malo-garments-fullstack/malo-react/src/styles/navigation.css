@@ -1,0 +1,57 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ *  CATEGORY NAVIGATION  (menu drawer, shop chips, sidebar, footer)
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Drawer: category accordion ───────────────────────────────────────── */
+.drawer-cat { border-bottom: 1px solid var(--border-light); opacity: 0; transform: translateX(-18px); }
+.drawer.open .drawer-cat { animation: drawerLink 0.55s var(--ease-out) forwards; animation-delay: calc(var(--i) * 45ms + 150ms); }
+.drawer-cat-row { display: flex; align-items: center; justify-content: space-between; }
+.drawer-cat-row > a { flex: 1; padding: 14px 10px; font-size: 1rem; font-weight: 500; color: var(--text); transition: color 0.2s, padding 0.25s; }
+.drawer-cat-row > a:hover { color: var(--rose); padding-left: 18px; }
+.drawer-cat-row > button { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border-radius: 50%; transition: transform 0.4s var(--ease-out), background 0.2s, color 0.2s; }
+.drawer-cat-row > button:hover { background: var(--cream); color: var(--rose); }
+.drawer-cat.open .drawer-cat-row > button { transform: rotate(180deg); color: var(--rose); }
+.drawer-subs { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-out); }
+.drawer-cat.open .drawer-subs { grid-template-rows: 1fr; }
+.drawer-subs > div { overflow: hidden; display: flex; flex-direction: column; padding-left: 14px; }
+.drawer-subs a { padding: 9px 12px; font-size: var(--fs-sm); color: var(--text-light); border-left: 2px solid var(--border-light); opacity: 0; transform: translateX(-10px); transition: opacity 0.3s, transform 0.4s var(--ease-out), color 0.2s, border-color 0.2s; }
+.drawer-cat.open .drawer-subs a { opacity: 1; transform: none; }
+.drawer-cat.open .drawer-subs a:nth-child(2) { transition-delay: 60ms; }
+.drawer-cat.open .drawer-subs a:nth-child(3) { transition-delay: 100ms; }
+.drawer-cat.open .drawer-subs a:nth-child(4) { transition-delay: 140ms; }
+.drawer-cat.open .drawer-subs a:nth-child(n+5) { transition-delay: 180ms; }
+.drawer-subs a:hover { color: var(--rose); border-color: var(--rose); }
+.drawer-links a.drawer-sale { color: var(--wine); font-weight: 600; }
+:root[data-theme="dark"] .drawer-links a.drawer-sale { color: var(--blush); }
+
+/* ── Shop: category chips ─────────────────────────────────────────────── */
+.chip-bar-wrap { border-bottom: 1px solid var(--border-light); background: var(--white); }
+.chip-bar { display: flex; gap: 8px; overflow-x: auto; padding: 14px 0; scrollbar-width: none; }
+.chip-bar::-webkit-scrollbar { display: none; }
+.chip { flex: none; padding: 8px 18px; border-radius: 50px; border: 1.5px solid var(--border); background: var(--white); color: var(--text); font-size: var(--fs-sm); font-weight: 500; white-space: nowrap; transition: transform 0.3s var(--ease-out), background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.3s; }
+.chip:hover { border-color: var(--rose); color: var(--rose); transform: translateY(-2px); }
+.chip.active { background: var(--rose); border-color: var(--rose); color: #fff; box-shadow: 0 6px 16px rgba(201,123,123,0.35); animation: chipPop 0.4s var(--ease-out); }
+.chip.sale { border-color: var(--wine); color: var(--wine); }
+.chip.sale.active { background: var(--wine); color: #fff; }
+:root[data-theme="dark"] .chip.sale:not(.active) { border-color: var(--blush); color: var(--blush); }
+.chip.small { padding: 5px 14px; font-size: var(--fs-xs); background: var(--cream); border-color: transparent; }
+.chip.small.active { background: var(--dark); border-color: var(--dark); box-shadow: none; }
+@keyframes chipPop { 0% { transform: scale(0.9); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+.sub-bar { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s var(--ease-out); }
+.sub-bar.open { grid-template-rows: 1fr; }
+.sub-bar > .chip-bar { overflow: hidden; padding: 0; }
+.sub-bar.open > .chip-bar { padding: 0 0 12px; overflow-x: auto; }
+
+/* ── Shop: grid swap + sidebar sub-levels ─────────────────────────────── */
+.grid-swap { animation: riseIn 0.55s var(--ease-out) both; transition: opacity 0.3s; }
+.grid-swap.is-fetching { opacity: 0.45; pointer-events: none; }
+.side-subs { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.45s var(--ease-out); }
+.side-subs.open { grid-template-rows: 1fr; }
+.side-subs > div { overflow: hidden; display: flex; flex-direction: column; margin-left: 18px; border-left: 2px solid var(--border-light); }
+.side-sub { text-align: left; padding: 6px 12px; font-size: var(--fs-xs); color: var(--text-light); border-radius: 0 8px 8px 0; transition: background 0.2s, color 0.2s, padding 0.25s; }
+.side-sub:hover { color: var(--rose); padding-left: 16px; }
+.side-sub.active { color: var(--rose); font-weight: 600; background: rgba(201,123,123,0.08); }
+
+/* ── Home: banner shade so white text stays readable on real photos ──── */
+.sc-banner-shade { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.42)); transition: opacity 0.5s; }
+.sc-banner:hover .sc-banner-shade { opacity: 0.8; }
