@@ -1,7 +1,9 @@
 import axios from 'axios'
 import type { Product, Category, User, Order, AdminStats, Customer, Address, ProductFilters } from '../types'
 
-const API = axios.create({ baseURL: '/api' })
+// const API = axios.create({ baseURL: '/api' })
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://malo-garments-production.up.railway.app'
+const API = axios.create({ baseURL: `${API_BASE_URL}/api` })
 
 /* Routes the backend guards with authenticateAdmin. Everything else is a customer request,
  * so an admin logged in on the same browser never hijacks the customer's orders/account. */
