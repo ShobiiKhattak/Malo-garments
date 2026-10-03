@@ -1,6 +1,6 @@
 /*
  * Malo Garments — Admin Routes (Prisma)
- * POST /login · GET /customers · GET /stats
+ * POST /login · GET/PUT /me · GET /customers · GET /stats
  */
 import express from 'express';
 import bcrypt from 'bcryptjs';
@@ -15,20 +15,62 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password)
-      return res.status(400).json({ error: 'Username and password are required.' });
+      return res.status(400).json({ error: 'Username/email and password are required.' });
 
-    const admin = await prisma.adminUser.findUnique({ where: { username } });
+    // Log in with either the username or the admin email
+    const login = String(username).trim();
+    const admin = await prisma.adminUser.findFirst({ where: { OR: [{ username: login }, { email: login.toLowerCase() }] } });
     if (!admin || !(await bcrypt.compare(password, admin.password_hash)))
-      return res.status(401).json({ error: 'Invalid username or password.' });
+      return res.status(401).json({ error: 'Invalid username/email or password.' });
 
     const token = jwt.sign(
       { id: admin.id, username: admin.username, name: admin.name },
       process.env.ADMIN_JWT_SECRET as string,
       { expiresIn: (process.env.ADMIN_JWT_EXPIRES_IN || '1d') as any }
     );
-    res.json({ success: true, token, admin: { id: admin.id, username: admin.username, name: admin.name } });
+    res.json({ success: true, token, admin: { id: admin.id, username: admin.username, name: admin.name, email: admin.email } });
   } catch (err: any) {
     console.error('POST /admin/login:', err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+/* GET /api/admin/me — the logged-in admin's account */
+router.get('/me', authenticateAdmin, async (req, res) => {
+  const admin = await prisma.adminUser.findUnique({ where: { id: req.admin!.id }, select: { id: true, username: true, name: true, email: true } });
+  if (!admin) return res.status(404).json({ error: 'Admin not found.' });
+  res.json(admin);
+});
+
+/* PUT /api/admin/me — change name / email / password. Always needs the current password. */
+router.put('/me', authenticateAdmin, async (req, res) => {
+  try {
+    const { currentPassword, name, email, newPassword } = req.body || {};
+    const admin = await prisma.adminUser.findUnique({ where: { id: req.admin!.id } });
+    if (!admin) return res.status(404).json({ error: 'Admin not found.' });
+    if (!currentPassword || !(await bcrypt.compare(String(currentPassword), admin.password_hash)))
+      return res.status(401).json({ error: 'Your current password is not correct.' });
+
+    const data: { name?: string; email?: string | null; password_hash?: string } = {};
+    if (typeof name === 'string' && name.trim()) data.name = name.trim().slice(0, 200);
+    if (typeof email === 'string') {
+      const e = email.trim().toLowerCase();
+      if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return res.status(400).json({ error: 'Please enter a valid email address.' });
+      if (e && e !== admin.email && await prisma.adminUser.findFirst({ where: { email: e, NOT: { id: admin.id } } }))
+        return res.status(409).json({ error: 'This email is already used by another admin.' });
+      data.email = e || null;
+    }
+    if (newPassword) {
+      const p = String(newPassword);
+      if (p.length < 10 || !/[a-zA-Z]/.test(p) || !/\d/.test(p))
+        return res.status(400).json({ error: 'New password must be at least 10 characters with letters and numbers.' });
+      data.password_hash = await bcrypt.hash(p, 10);
+    }
+
+    const updated = await prisma.adminUser.update({ where: { id: admin.id }, data, select: { id: true, username: true, name: true, email: true } });
+    res.json({ success: true, admin: updated, passwordChanged: !!data.password_hash });
+  } catch (err: any) {
+    console.error('PUT /admin/me:', err);
     res.status(500).json({ error: 'Something went wrong.' });
   }
 });

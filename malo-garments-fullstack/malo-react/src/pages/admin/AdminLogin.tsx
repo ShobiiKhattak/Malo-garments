@@ -32,7 +32,7 @@ export default function AdminLogin() {
       const r = await adminLogin(form)
       loginAdmin(r.admin, r.token)
       navigate((location.state as { from?: string } | null)?.from || '/admin/dashboard')
-    } catch { setError('Invalid username or password.') }
+    } catch { setError('Invalid username/email or password.') }
     finally { setLoading(false) }
   }
 
@@ -47,7 +47,7 @@ export default function AdminLogin() {
             <h2 className="neon-heading">Admin Login</h2>
             {error && <div className="neon-error-text" style={{ marginTop: -12, marginBottom: 16 }}>{error}</div>}
             <div className="neon-field">
-              <label htmlFor="admin-username">Username</label>
+              <label htmlFor="admin-username">Username or email</label>
               <div className="neon-field-row">
                 <input id="admin-username" type="text" value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} autoComplete="off" />
                 <span className="neon-field-icon"><UserIcon /></span>
@@ -65,7 +65,6 @@ export default function AdminLogin() {
             <button type="submit" className="neon-btn" disabled={loading}>
               {loading && <span className="neon-btn-spinner" />}{loading ? 'Logging in...' : 'Log In'}
             </button>
-            <div className="neon-switch" style={{ marginTop: 22 }}>Demo — Username: <strong style={{ color: '#fdf6f0' }}>admin</strong> · Password: <strong style={{ color: '#fdf6f0' }}>admin123</strong></div>
           </form>
         </div>
 

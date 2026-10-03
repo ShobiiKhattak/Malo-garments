@@ -29,6 +29,7 @@ import Products from './pages/admin/Products'
 import Categories from './pages/admin/Categories'
 import Orders from './pages/admin/Orders'
 import Customers from './pages/admin/Customers'
+import AdminSettings from './pages/admin/Settings'
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('malo_admin_token')
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/customers" element={<Customers />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Routes>
     </BrowserRouter>

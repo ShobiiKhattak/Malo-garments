@@ -15,6 +15,7 @@ const PAGES = [
   { to: '/admin/categories',  label: 'Categories', icon: '🗂️' },
   { to: '/admin/orders',      label: 'Orders',     icon: '📦' },
   { to: '/admin/customers',   label: 'Customers',  icon: '👥' },
+  { to: '/admin/settings',    label: 'Account',    icon: '⚙️' },
 ]
 
 const greeting = () => {

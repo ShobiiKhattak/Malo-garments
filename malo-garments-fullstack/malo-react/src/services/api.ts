@@ -1,8 +1,11 @@
 import axios from 'axios'
 import type { Product, Category, User, Order, AdminStats, Customer, Address, ProductFilters } from '../types'
 
-// const API = axios.create({ baseURL: '/api' })
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://malo-garments-production.up.railway.app'
+// Which backend to talk to:
+//  • VITE_API_URL set (e.g. on Netlify) → that backend
+//  • `npm run dev` on this laptop       → the local backend (Vite proxies /api to port 3001)
+//  • production build without the var   → the Railway backend
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? '' : 'https://malo-garments-production.up.railway.app')
 const API = axios.create({ baseURL: `${API_BASE_URL}/api` })
 
 /* Routes the backend guards with authenticateAdmin. Everything else is a customer request,
@@ -103,6 +106,10 @@ export const updateOrderStatus = (id: string, status: string) => API.patch(`/ord
 export const initiatePayment = (payload: any) => API.post('/payments/initiate', payload).then(r => r.data)
 
 // ─── Admin ───────────────────────────────────────────────
+export interface AdminAccount { id: string; username: string; name: string; email: string | null }
+export const getAdminMe = (): Promise<AdminAccount> => API.get('/admin/me').then(r => r.data)
+export const updateAdminMe = (data: { currentPassword: string; name?: string; email?: string; newPassword?: string }): Promise<{ success: boolean; admin: AdminAccount; passwordChanged: boolean }> =>
+  API.put('/admin/me', data).then(r => r.data)
 export const adminLogin = (data: { username: string; password: string }) =>
   API.post('/admin/login', data).then(r => r.data)
 export const getAdminStats = (): Promise<AdminStats> => API.get('/admin/stats').then(r => r.data)
