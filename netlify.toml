@@ -1,7 +1,7 @@
 [build]
   base = "malo-garments-fullstack/malo-react"
   command = "npm run build"
-  publish = "malo-garments-fullstack/malo-react/dist"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
