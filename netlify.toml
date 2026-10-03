@@ -1,0 +1,9 @@
+[build]
+  base = "malo-garments-fullstack/malo-react"
+  command = "npm run build"
+  publish = "malo-garments-fullstack/malo-react/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
