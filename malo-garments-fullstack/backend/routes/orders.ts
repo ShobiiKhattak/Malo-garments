@@ -15,8 +15,12 @@ import {
 const router = express.Router();
 const VALID_STATUSES = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
-/* Normalise an order + items to frontend shape */
-const shapeOrder = (order: any) => ({
+/* Normalise an order + items to frontend shape.
+ * Supplier / cost details (dropshipping) are only included for the admin. */
+const ITEM_SUPPLIER = ['is_dropship', 'cost_price', 'supplier_name', 'supplier_phone', 'supplier_url', 'supplier_sku'];
+const ORDER_SUPPLIER = ['supplier_status', 'supplier_ref', 'supplier_sent_at'];
+const shapeOrder = (order: any, admin = false) => {
+  const out: any = {
   ...order,
   subtotal: Number(order.subtotal),
   shipping: Number(order.shipping),
@@ -33,8 +37,16 @@ const shapeOrder = (order: any) => ({
     zip:     order.zip,
     country: order.country,
   },
-  items: (order.items || []).map((i: any) => ({ ...i, price: Number(i.price) })),
-});
+  items: (order.items || []).map((i: any) => {
+    const item: any = { ...i, price: Number(i.price) };
+    if (admin) item.cost_price = i.cost_price != null ? Number(i.cost_price) : null;
+    else ITEM_SUPPLIER.forEach(f => delete item[f]);
+    return item;
+  }),
+  };
+  if (!admin) ORDER_SUPPLIER.forEach(f => delete out[f]);
+  return out;
+};
 
 /* POST /api/orders — guest or logged-in checkout */
 router.post('/', optionalCustomerAuth, async (req, res) => {
@@ -73,7 +85,8 @@ router.post('/', optionalCustomerAuth, async (req, res) => {
       const product = await prisma.product.findUnique({ where: { id: ci.productId } });
       if (!product)
         return res.status(400).json({ error: `Product ${ci.productId} is no longer available.` });
-      if (product.stock < qty)
+      // Dropship: the supplier holds the stock, so there is nothing to check or reserve here.
+      if (!product.is_dropship && product.stock < qty)
         return res.status(400).json({ error: `Not enough stock for ${product.name} (only ${product.stock} left).` });
 
       const imgs = product.images ?? [];
@@ -85,6 +98,13 @@ router.post('/', optionalCustomerAuth, async (req, res) => {
         size:       ci.size  || '',
         color:      ci.color || '',
         quantity:   qty,
+        // snapshot of the supplier at order time (admin-only)
+        is_dropship:    product.is_dropship,
+        cost_price:     product.supplier_price,
+        supplier_name:  product.supplier_name,
+        supplier_phone: product.supplier_phone,
+        supplier_url:   product.supplier_url,
+        supplier_sku:   product.supplier_sku,
       });
     }
 
@@ -129,6 +149,12 @@ router.post('/', optionalCustomerAuth, async (req, res) => {
               size:       item.size,
               color:      item.color,
               quantity:   item.quantity,
+              is_dropship:    Boolean(item.is_dropship),
+              cost_price:     item.cost_price ?? null,
+              supplier_name:  item.supplier_name ?? null,
+              supplier_phone: item.supplier_phone ?? null,
+              supplier_url:   item.supplier_url ?? null,
+              supplier_sku:   item.supplier_sku ?? null,
             })),
           },
         },
@@ -137,7 +163,7 @@ router.post('/', optionalCustomerAuth, async (req, res) => {
 
       // Decrement stock (skip Design Studio items — they have no real Product row)
       for (const item of resolvedItems) {
-        if (!item.product_id) continue;
+        if (!item.product_id || item.is_dropship) continue;   // dropship stock lives with the supplier
         await tx.product.update({
           where: { id: item.product_id },
           data:  { stock: { decrement: item.quantity } },
@@ -165,7 +191,7 @@ router.get('/', authenticateAdmin, async (req, res) => {
       include:  { items: true },
       orderBy:  { created_at: 'desc' },
     });
-    res.json(orders.map(shapeOrder));
+    res.json(orders.map(o => shapeOrder(o, true)));   // admin: includes supplier details
   } catch (err: any) {
     console.error('GET /orders:', err);
     res.status(500).json({ error: 'Something went wrong.' });
@@ -180,7 +206,7 @@ router.get('/mine', authenticateCustomer, async (req, res) => {
       include: { items: true },
       orderBy: { created_at: 'desc' },
     });
-    res.json(orders.map(shapeOrder));
+    res.json(orders.map(o => shapeOrder(o)));
   } catch (err: any) {
     console.error('GET /orders/mine:', err);
     res.status(500).json({ error: 'Something went wrong.' });
@@ -277,6 +303,32 @@ router.post('/:id/payment', async (req, res) => {
     res.json({ success: true, payment_status: 'submitted' });
   } catch (err: any) {
     console.error('POST /orders/:id/payment:', err);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+/* PATCH /api/orders/:id/supplier — admin marks a dropship order as placed with / shipped by the supplier.
+ * Manual on purpose: the admin places the order on the supplier's site themselves. */
+const SUPPLIER_STATUSES = ['placed', 'shipped'];
+router.patch('/:id/supplier', authenticateAdmin, async (req, res) => {
+  try {
+    const { status, ref } = req.body || {};
+    if (status != null && status !== '' && !SUPPLIER_STATUSES.includes(status))
+      return res.status(400).json({ error: "status must be 'placed', 'shipped' or empty." });
+    const order = await prisma.order.findUnique({ where: { id: req.params.id }, select: { supplier_sent_at: true } });
+    if (!order) return res.status(404).json({ error: 'Order not found.' });
+    const updated = await prisma.order.update({
+      where: { id: req.params.id },
+      data: {
+        supplier_status: status || null,
+        ...(ref !== undefined ? { supplier_ref: String(ref).trim().slice(0, 120) || null } : {}),
+        supplier_sent_at: status ? (order.supplier_sent_at ?? new Date()) : null,
+      },
+      select: { supplier_status: true, supplier_ref: true, supplier_sent_at: true },
+    });
+    res.json({ success: true, ...updated });
+  } catch (err: any) {
+    console.error('PATCH /orders/:id/supplier:', err);
     res.status(500).json({ error: 'Something went wrong.' });
   }
 });

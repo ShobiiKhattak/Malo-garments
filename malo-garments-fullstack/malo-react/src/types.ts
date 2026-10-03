@@ -39,6 +39,13 @@ export interface Product {
   date_added?: string;
   featured: boolean;
   on_sale: boolean;
+  /** Dropshipping — only returned to the admin */
+  is_dropship?: boolean;
+  supplier_name?: string | null;
+  supplier_phone?: string | null;
+  supplier_url?: string | null;
+  supplier_sku?: string | null;
+  supplier_price?: number | null;
 }
 
 export interface CartItem {
@@ -93,6 +100,13 @@ export interface OrderItem {
   size?: string;
   color?: string;
   quantity: number;
+  /** Dropship supplier snapshot — only returned to the admin */
+  is_dropship?: boolean;
+  cost_price?: number | null;
+  supplier_name?: string | null;
+  supplier_phone?: string | null;
+  supplier_url?: string | null;
+  supplier_sku?: string | null;
 }
 
 export interface OrderCustomer {
@@ -119,6 +133,10 @@ export interface Order {
   payment_ref?: string | null;
   payment_submitted_at?: string | null;
   payment_confirmed_at?: string | null;
+  /** Dropshipping (admin only): placed with supplier / shipped by supplier */
+  supplier_status?: 'placed' | 'shipped' | null;
+  supplier_ref?: string | null;
+  supplier_sent_at?: string | null;
   paymentMethod?: string;
   created_at?: string;
   createdAt?: string;
@@ -163,4 +181,6 @@ export interface ProductFilters {
   maxPrice?: number;
   size?: string;
   sort?: string;
+  /** admin pages: ask for supplier details too (needs the admin token) */
+  admin?: boolean;
 }

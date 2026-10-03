@@ -5,22 +5,60 @@
 import express from 'express';
 import prisma from '../config/prisma';
 import { generateId } from '../utils/id';
+import jwt from 'jsonwebtoken';
 import { authenticateAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
-/* Helper — normalise Prisma product to frontend shape */
-const normalise = (p: any) => ({
-  ...p,
-  price:          Number(p.price),
-  original_price: Number(p.original_price),
-  rating:         Number(p.rating),
-  featured:       Boolean(p.featured),
-  on_sale:        Boolean(p.on_sale),
-  sizes:  p.sizes  ?? [],
-  colors: p.colors ?? [],
-  images: p.images ?? [],
-});
+/** True when the request carries a valid admin token (supplier details are only shown to the admin). */
+const isAdminReq = (req: express.Request) => {
+  const h = req.headers.authorization || '';
+  if (!h.startsWith('Bearer ')) return false;
+  try { jwt.verify(h.slice(7), process.env.ADMIN_JWT_SECRET as string); return true; } catch { return false; }
+};
+
+const SUPPLIER_FIELDS = ['supplier_name', 'supplier_phone', 'supplier_url', 'supplier_sku', 'supplier_price'] as const;
+
+/* Helper — normalise Prisma product to frontend shape. Customers never see supplier/cost fields. */
+const normalise = (p: any, admin = false) => {
+  const out: any = {
+    ...p,
+    price:          Number(p.price),
+    original_price: Number(p.original_price),
+    rating:         Number(p.rating),
+    featured:       Boolean(p.featured),
+    on_sale:        Boolean(p.on_sale),
+    is_dropship:    Boolean(p.is_dropship),
+    sizes:  p.sizes  ?? [],
+    colors: p.colors ?? [],
+    images: p.images ?? [],
+  };
+  if (admin) {
+    out.supplier_price = p.supplier_price != null ? Number(p.supplier_price) : null;
+  } else {
+    for (const f of SUPPLIER_FIELDS) delete out[f];
+    delete out.is_dropship;
+    // The supplier holds the stock — a dropship product is always available to order.
+    if (p.is_dropship) out.stock = Math.max(Number(p.stock) || 0, 999);
+  }
+  return out;
+};
+
+/** Reads the dropship fields from a create/update body. */
+const dropshipData = (b: any, existing?: any) => {
+  const has = (k: string) => b[k] !== undefined;
+  const str = (k: string, max: number) => (has(k) ? (String(b[k] ?? '').trim().slice(0, max) || null) : existing?.[k] ?? null);
+  return {
+    is_dropship:    has('is_dropship') ? Boolean(b.is_dropship) : Boolean(existing?.is_dropship),
+    supplier_name:  str('supplier_name', 150),
+    supplier_phone: str('supplier_phone', 30),
+    supplier_url:   str('supplier_url', 500),
+    supplier_sku:   str('supplier_sku', 120),
+    supplier_price: has('supplier_price')
+      ? (b.supplier_price === '' || b.supplier_price == null ? null : Number(b.supplier_price))
+      : existing?.supplier_price ?? null,
+  };
+};
 
 /* GET /api/products */
 router.get('/', async (req, res) => {
@@ -67,7 +105,8 @@ router.get('/', async (req, res) => {
       });
     }
 
-    res.json(products.map(normalise));
+    const admin = isAdminReq(req);
+    res.json(products.map(p => normalise(p, admin)));
   } catch (err: any) {
     console.error('GET /products:', err);
     res.status(500).json({ error: 'Something went wrong.' });
@@ -79,7 +118,7 @@ router.get('/:id', async (req, res) => {
   try {
     const product = await prisma.product.findUnique({ where: { id: req.params.id } });
     if (!product) return res.status(404).json({ error: 'Product not found.' });
-    res.json(normalise(product));
+    res.json(normalise(product, isAdminReq(req)));
   } catch (err: any) {
     console.error('GET /products/:id:', err);
     res.status(500).json({ error: 'Something went wrong.' });
@@ -110,6 +149,7 @@ router.post('/', authenticateAdmin, async (req, res) => {
         // a higher original price means the product is on sale (keeps the Sale filter + badges consistent)
         on_sale:        Boolean(on_sale) || Number(original_price || price) > Number(price),
         date_added:     new Date(),
+        ...dropshipData(req.body),
       },
     });
     res.status(201).json({ success: true, id: product.id });
@@ -143,6 +183,7 @@ router.put('/:id', authenticateAdmin, async (req, res) => {
         featured:        featured !== undefined ? Boolean(featured) : existing.featured,
         on_sale:         (on_sale !== undefined ? Boolean(on_sale) : existing.on_sale)
                          || (original_price !== undefined && price !== undefined && Number(original_price) > Number(price)),
+        ...dropshipData(req.body, existing),
       },
     });
     res.json({ success: true });

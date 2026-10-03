@@ -86,6 +86,8 @@ interface ProductFormState {
   name: string; price: string | number; original_price: string | number; stock: string | number
   category_id: string; subcategory_id: string; description: string
   featured: boolean; on_sale: boolean; sizes: string; colors: Color[]; images: string[]
+  // dropshipping — admin-only, never shown to customers
+  is_dropship: boolean; supplier_name: string; supplier_url: string; supplier_sku: string; supplier_price: string | number
 }
 
 // ── Product Modal ──────────────────────────────────────────────────────────────
@@ -108,12 +110,18 @@ function ProductModal({ product, categories, onClose, onSave, saving }: {
     on_sale: !!product.on_sale,
     sizes: (product.sizes || []).join(', '),
     colors: [...(product.colors || [])],
-    images: [...(product.images || [])]
+    images: [...(product.images || [])],
+    is_dropship: !!product.is_dropship,
+    supplier_name: product.supplier_name || '',
+    supplier_url: product.supplier_url || '',
+    supplier_sku: product.supplier_sku || '',
+    supplier_price: product.supplier_price ?? '',
   } : {
     name: '', price: '', original_price: '', stock: '',
     category_id: '', subcategory_id: '', description: '',
     featured: false, on_sale: false,
-    sizes: '', colors: [{ name: '', hex: '#C97B7B' }], images: []
+    sizes: '', colors: [{ name: '', hex: '#C97B7B' }], images: [],
+    is_dropship: false, supplier_name: '', supplier_url: '', supplier_sku: '', supplier_price: '',
   })
 
   const set = <K extends keyof ProductFormState>(k: K, v: ProductFormState[K]) => setForm(f => ({ ...f, [k]: v }))
@@ -159,6 +167,7 @@ function ProductModal({ product, categories, onClose, onSave, saving }: {
       price: Number(form.price),
       original_price: Number(form.original_price) || Number(form.price),
       stock: Number(form.stock) || 0,
+      supplier_price: form.supplier_price === '' ? null : Number(form.supplier_price),
       sizes: form.sizes.split(',').map(s => s.trim()).filter(Boolean),
       colors: form.colors.filter(c => c.name.trim()),
       // a struck-through original price means the product is on sale (keeps Sale filter + badges consistent)
@@ -183,8 +192,8 @@ function ProductModal({ product, categories, onClose, onSave, saving }: {
               <input value={form.name} onChange={e => set('name', e.target.value)} className="form-input" placeholder="e.g. Floral Maxi Dress" required />
             </div>
             <div className="form-group">
-              <label className="form-label">Stock Quantity *</label>
-              <input type="number" value={form.stock} onChange={e => set('stock', e.target.value)} className="form-input" min="0" required />
+              <label className="form-label">Stock Quantity {form.is_dropship ? <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(not needed — supplier holds stock)</span> : '*'}</label>
+              <input type="number" value={form.stock} onChange={e => set('stock', e.target.value)} className="form-input" min="0" required={!form.is_dropship} disabled={form.is_dropship} placeholder={form.is_dropship ? 'Always in stock' : ''} />
             </div>
           </div>
 
@@ -224,6 +233,48 @@ function ProductModal({ product, categories, onClose, onSave, saving }: {
           <div className="form-group">
             <label className="form-label">Sizes (comma-separated)</label>
             <input value={form.sizes} onChange={e => set('sizes', e.target.value)} className="form-input" placeholder="e.g. XS, S, M, L, XL" />
+          </div>
+
+          {/* Dropshipping — you find the product on another store and order it there yourself */}
+          <div className={`ds-box ${form.is_dropship ? 'on' : ''}`}>
+            <label className="ds-toggle">
+              <input type="checkbox" checked={form.is_dropship} onChange={e => set('is_dropship', e.target.checked)} />
+              <span><b>🚚 Dropship product</b><small>I don't keep stock — I order it from a supplier after the customer buys. Supplier details are never shown to customers.</small></span>
+            </label>
+            {form.is_dropship && (() => {
+              const cost = Number(form.supplier_price) || 0
+              const sell = Number(form.price) || 0
+              const profit = sell - cost
+              return (
+                <div className="ds-fields">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Supplier / store name</label>
+                      <input className="form-input" value={form.supplier_name} onChange={e => set('supplier_name', e.target.value)} placeholder="e.g. Daraz shop, AliExpress seller, wholesaler" />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Supplier price (your cost, Rs.)</label>
+                      <input className="form-input" type="number" min="0" value={form.supplier_price} onChange={e => set('supplier_price', e.target.value)} placeholder="What you pay the supplier" />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Supplier product link</label>
+                    <input className="form-input" type="url" value={form.supplier_url} onChange={e => set('supplier_url', e.target.value)} placeholder="https://… (the page where you found this product)" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Supplier SKU / code <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
+                    <input className="form-input" value={form.supplier_sku} onChange={e => set('supplier_sku', e.target.value)} />
+                  </div>
+                  {cost > 0 && sell > 0 && (
+                    <div className={`ds-profit ${profit > 0 ? 'good' : 'bad'}`}>
+                      <span>Profit per piece</span>
+                      <b>Rs. {profit.toLocaleString('en-PK')}</b>
+                      <em>{profit > 0 ? `${Math.round((profit / sell) * 100)}% margin` : 'You would lose money at this price'}</em>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
           </div>
 
           {/* Colors */}
@@ -299,7 +350,7 @@ export default function Products() {
   const [modal, setModal] = useState<'new' | Product | null>(null) // null = closed | 'new' | product object
   const qc = useQueryClient()
 
-  const { data: products = [] } = useQuery({ queryKey: ['products', {}], queryFn: () => getProducts() })
+  const { data: products = [] } = useQuery({ queryKey: ['products', { admin: true }], queryFn: () => getProducts({ admin: true }) })
   const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: getCategories })
 
   const saveMut = useMutation({
@@ -356,18 +407,19 @@ export default function Products() {
                 <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--sp-xl)' }}>No products found.</td></tr>
               ) : filtered.map(p => {
                 const cat = categories.find(c => c.id === p.category_id)
-                const st = p.stock <= 0 ? 'out-of-stock' : p.stock <= 5 ? 'low-stock' : 'in-stock'
-                const stLabel = p.stock <= 0 ? 'Out of Stock' : p.stock <= 5 ? 'Low Stock' : 'In Stock'
+                const st = p.is_dropship ? 'in-stock' : p.stock <= 0 ? 'out-of-stock' : p.stock <= 5 ? 'low-stock' : 'in-stock'
+                const stLabel = p.is_dropship ? '🚚 Dropship' : p.stock <= 0 ? 'Out of Stock' : p.stock <= 5 ? 'Low Stock' : 'In Stock'
+                const profit = p.is_dropship && p.supplier_price ? p.price - p.supplier_price : null
                 return (
                   <tr key={p.id}>
                     <td data-label="">
                       <img src={p.images?.[0]} alt={p.name} className="admin-table-thumb"
                         onError={e => { const img = e.target as HTMLImageElement; img.style.background = 'var(--cream)'; img.style.opacity = '0.5' }} />
                     </td>
-                    <td data-label="Name"><strong>{p.name}</strong></td>
+                    <td data-label="Name"><strong>{p.name}</strong>{profit !== null && <small className="ds-mini">Profit Rs. {profit.toLocaleString('en-PK')}</small>}</td>
                     <td data-label="Category">{cat?.name || '—'}</td>
                     <td data-label="Price">{fmt(p.price)}</td>
-                    <td data-label="Stock">{p.stock}</td>
+                    <td data-label="Stock">{p.is_dropship ? '—' : p.stock}</td>
                     <td data-label="Status"><span className={`admin-badge ${st}`}>{stLabel}</span></td>
                     <td data-label="Actions">
                       <div className="admin-table-actions">

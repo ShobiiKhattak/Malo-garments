@@ -175,3 +175,48 @@ body.admin-body { background: var(--off-white); }
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar::before, .admin-sidebar::after { animation: none; }
 }
+
+/* ── Dropshipping: product form ───────────────────────────────────────── */
+.ds-box { margin: 4px 0 var(--sp-lg); padding: 14px 16px; border-radius: 14px; border: 1.5px dashed var(--border); background: var(--cream); transition: border-color 0.25s, background 0.25s; }
+.ds-box.on { border-style: solid; border-color: rgba(201,123,123,0.55); background: var(--blush-light); }
+.ds-toggle { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.ds-toggle input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--rose); flex-shrink: 0; }
+.ds-toggle b { display: block; color: var(--text); }
+.ds-toggle small { display: block; color: var(--text-light); font-size: var(--fs-xs); line-height: 1.5; margin-top: 2px; }
+.ds-fields { margin-top: 14px; }
+.ds-profit { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px; border-radius: 10px; font-size: var(--fs-sm); }
+.ds-profit.good { background: var(--success-bg); color: var(--success); }
+.ds-profit.bad { background: var(--error-bg); color: var(--error); }
+.ds-profit b { font-size: 1.1rem; }
+.ds-profit em { font-style: normal; opacity: 0.85; }
+.ds-mini { display: block; margin-top: 2px; font-size: var(--fs-xs); color: var(--success); font-weight: 500; }
+
+/* ── Dropshipping: order window + list flag ───────────────────────────── */
+.sp-flag { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; font-weight: 600; white-space: nowrap; color: #8a5a00; background: #fff1cc; }
+.sp-box { margin-bottom: var(--sp-lg); padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border); background: var(--cream); }
+.sp-box.todo { border-color: #f0ad4e; background: #fff8e1; }
+:root[data-theme="dark"] .sp-box.todo { background: #3a2f14; }
+.sp-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.sp-badge { padding: 3px 10px; border-radius: 99px; font-size: var(--fs-xs); font-weight: 600; background: var(--white); }
+.sp-badge.todo { color: #8a5a00; } .sp-badge.placed { color: var(--info, #2f6fb0); } .sp-badge.shipped { color: var(--success); }
+.sp-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px dashed var(--border); }
+.sp-item > div { min-width: 0; }
+.sp-item b { display: block; font-size: var(--fs-sm); }
+.sp-item small { display: block; font-size: var(--fs-xs); color: var(--text-light); overflow-wrap: anywhere; }
+.sp-item .btn { flex-shrink: 0; }
+.sp-nolink { font-size: var(--fs-xs); color: var(--text-muted); flex-shrink: 0; }
+.sp-ship { margin: 10px 0; padding: 12px; border-radius: 10px; background: var(--white); border: 1px solid var(--border-light); }
+.sp-ship-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: var(--fs-xs); color: var(--text-light); margin-bottom: 6px; }
+.sp-copy { padding: 4px 12px; border-radius: 99px; font-size: var(--fs-xs); cursor: pointer; color: var(--rose); background: none; border: 1px solid var(--rose); }
+.sp-copy:hover { background: var(--rose); color: #fff; }
+.sp-ship pre { margin: 0 0 6px; font-family: inherit; font-size: var(--fs-sm); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
+.sp-ship small { font-size: var(--fs-xs); color: var(--text-light); }
+.sp-money > div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: var(--fs-sm); }
+.sp-money span { color: var(--text-light); }
+.sp-money .sp-profit { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border); font-weight: 700; }
+.sp-money .sp-profit b { color: var(--success); }
+.sp-money small { display: block; margin-top: 4px; font-size: var(--fs-xs); color: var(--text-muted); }
+.sp-actions { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.sp-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sp-reset { background: none; border: none; color: var(--text-muted); font-size: var(--fs-xs); cursor: pointer; text-decoration: underline; }
+@media (max-width: 560px) { .sp-item { flex-direction: column; align-items: flex-start; } .sp-btns .btn { flex: 1 1 100%; } }

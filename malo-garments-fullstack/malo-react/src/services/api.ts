@@ -17,6 +17,8 @@ const isAdminRequest = (method = 'get', url = '') => {
     || (m === 'get' && path === '/orders')
     || (m === 'patch' && /^\/orders\/[^/]+\/(status|payment)$/.test(path))
     || (m !== 'get' && /^\/(products|categories)(\/|$)/.test(path))
+    || (m === 'patch' && /^\/orders\/[^/]+\/supplier$/.test(path))
+    || (/^\/products/.test(path) && /[?&]admin=1/.test(url))   // admin product list (with supplier details)
 }
 
 // Attach the right token automatically
@@ -40,6 +42,7 @@ export const getProducts = (filters: ProductFilters = {}): Promise<Product[]> =>
   if (filters.maxPrice !== undefined) params.set('maxPrice', String(filters.maxPrice))
   if (filters.size) params.set('size', filters.size)
   if (filters.sort) params.set('sort', filters.sort)
+  if (filters.admin) params.set('admin', '1')
   return API.get(`/products?${params}`).then(r => r.data)
 }
 
@@ -101,6 +104,9 @@ export const submitOnlinePayment = (id: string, data: { email: string; reference
 export const decideOnlinePayment = (id: string, action: 'confirm' | 'reject') =>
   API.patch(`/orders/${id}/payment`, { action }).then(r => r.data)
 export const updateOrderStatus = (id: string, status: string) => API.patch(`/orders/${id}/status`, { status }).then(r => r.data)
+/** Dropshipping: mark an order as placed with the supplier / shipped (manual). */
+export const updateOrderSupplier = (id: string, data: { status: 'placed' | 'shipped' | null; ref?: string }) =>
+  API.patch(`/orders/${id}/supplier`, data).then(r => r.data)
 
 // ─── Payments ─────────────────────────────────────────────
 export const initiatePayment = (payload: any) => API.post('/payments/initiate', payload).then(r => r.data)

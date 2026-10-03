@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import SupplierPanel from '../../components/admin/SupplierPanel'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAllOrders, updateOrderStatus, decideOnlinePayment } from '../../services/api'
@@ -101,6 +102,9 @@ export default function Orders() {
               </div>
             )}
 
+            {/* ── Dropship items: place the order with the supplier yourself ── */}
+            <SupplierPanel order={openOrder} />
+
             <p style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--sp-sm)' }}><strong>Customer:</strong> {openOrder.customer?.name || openOrder.customer_name} ({openOrder.customer?.email || openOrder.customer_email})</p>
             <p style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--sp-sm)' }}><strong>Phone:</strong> {openOrder.customer?.phone || openOrder.customer_phone}</p>
             <p style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--sp-xl)' }}><strong>Address:</strong> {openOrder.customer?.address || openOrder.address}, {openOrder.customer?.city || openOrder.city}</p>
@@ -144,7 +148,9 @@ export default function Orders() {
               {filtered.length === 0 ? <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--sp-xl)' }}>No orders found.</td></tr>
                 : filtered.map(o => (
                   <tr key={o.id} className={o.payment_status === 'submitted' ? 'row-verify' : ''}>
-                    <td data-label="Order ID"><strong style={{ fontSize: 'var(--fs-xs)' }}>{o.id}</strong></td>
+                    <td data-label="Order ID"><strong style={{ fontSize: 'var(--fs-xs)' }}>{o.id}</strong>
+                      {o.items?.some(i => i.is_dropship) && !o.supplier_status && o.status !== 'Cancelled' && <span className="sp-flag" title="Dropship — place this order with the supplier">🚚 To place</span>}
+                    </td>
                     <td data-label="Customer">{o.customer?.name || o.customer_name}</td>
                     <td data-label="Date">{new Date(o.created_at || o.createdAt || '').toLocaleDateString()}</td>
                     <td data-label="Items">{o.items?.reduce((s, i) => s + i.quantity, 0) || 0}</td>
